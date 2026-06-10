@@ -16,7 +16,7 @@ const kebabCaseName = tableName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const camelCaseName = kebabCaseName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 
 const generatorDir = path.join(__dirname, '../db/generator');
-const modelFilePath = path.join(generatorDir, `${kebabCaseName}.ts`);
+const modelFilePath = path.join(generatorDir, `${kebabCaseName}-migration.ts`);
 const schemaIndexFilePath = path.join(generatorDir, 'index.ts');
 
 // 1. Buat folder generator jika belum ada
