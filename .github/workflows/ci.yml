@@ -1,0 +1,83 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install Dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Run Tests (Backend)
+      run: bun run build:backend && bun --cwd apps/backend test
+
+    - name: Run Linter (Frontend)
+      run: bun --cwd apps/frontend run lint
+
+    - name: Build Frontend
+      run: bun run build:frontend
+
+    - name: Build Docs
+      run: bun run build:docs
+
+    - name: Set up QEMU
+      if: github.event_name != 'pull_request'
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      if: github.event_name != 'pull_request'
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Backend Docker image
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/backend/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/kholifanalfon99/screener-be:${{ github.ref_name }}
+          ghcr.io/kholifanalfon99/screener-be:latest
+
+    - name: Build and push Frontend Docker image
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/frontend/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/kholifanalfon99/screener-fe:${{ github.ref_name }}
+          ghcr.io/kholifanalfon99/screener-fe:latest
+
+    - name: Build and push Docs Docker image
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/docs/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/kholifanalfon99/screener-docs:${{ github.ref_name }}
+          ghcr.io/kholifanalfon99/screener-docs:latest

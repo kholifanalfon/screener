@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: screener-trade-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: screener_trade
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - screener-network
+
+  backend:
+    image: ghcr.io/kholifanalfon99/screener-be:latest
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: screener-be
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:password@postgres:5432/screener_trade
+    depends_on:
+      - postgres
+    networks:
+      - screener-network
+
+  frontend:
+    image: ghcr.io/kholifanalfon99/screener-fe:latest
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: screener-fe
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - screener-network
+
+  docs:
+    image: ghcr.io/kholifanalfon99/screener-docs:latest
+    build:
+      context: .
+      dockerfile: docker/docs/Dockerfile
+    container_name: screener-docs
+    ports:
+      - "8080:80"
+    networks:
+      - screener-network
+
+volumes:
+  pgdata:
+
+networks:
+  screener-network:
+    driver: bridge

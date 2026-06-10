@@ -1,0 +1,9 @@
+node_modules/
+.env
+dist/
+build/
+.docusaurus/
+.DS_Store
+*.log
+coverage/
+.bun-build/

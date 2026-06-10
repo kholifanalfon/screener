@@ -1,0 +1,17 @@
+# Ignore specific directories and files
+node_modules/
+dist/
+build/
+coverage/
+.bun/
+.next/
+
+# Ignore lock files (formatting can break them)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+
+# Ignore auto-generated files
+*.min.js
+*.min.css

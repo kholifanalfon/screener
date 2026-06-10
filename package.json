@@ -1,0 +1,20 @@
+{
+  "name": "screener-trade-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "bun --cwd apps/backend dev",
+    "dev:frontend": "bun --cwd apps/frontend dev",
+    "dev:docs": "bun --cwd apps/docs start",
+    "dev": "bun run dev:backend & bun run dev:frontend",
+    "build:backend": "bun --cwd apps/backend build",
+    "build:frontend": "bun --cwd apps/frontend build",
+    "build:docs": "bun --cwd apps/docs build"
+  },
+  "resolutions": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0"
+  }
+}
