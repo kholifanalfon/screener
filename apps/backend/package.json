@@ -6,7 +6,12 @@
     "dev": "bun --watch src/index.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "start": "bun run dist/index.js",
-    "test": "bun test"
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "bun run ./src/db/migrate.ts",
+    "db:studio": "drizzle-kit studio",
+    "db:make": "bun run ./src/command/make-table.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

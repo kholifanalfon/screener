@@ -26,6 +26,11 @@ Kami menerapkan standar industri tinggi untuk memastikan _maintainability_ dan _
 - **CI/CD & Automated Deployment:**
   - **GitHub Actions Pipeline:** Mengotomatiskan proses pengujian kode (bun test) dan validasi formatting (Biome/ESLint) setiap kali ada aktivitas Pull Request ke cabang development atau main.
   - **Docker & GHCR (GitHub Packages):** Hasil build aplikasi yang sukses akan dibungkus menjadi production-ready Docker image (berbasis oven/bun:alpine) dan didorong langsung ke GitHub Container Registry (GHCR) sebagai repositori image privat perusahaan. Server target tinggal menarik image terverifikasi tersebut untuk proses pembaruan instan.
+- **Database Management & Migrations:**
+  - **Drizzle ORM:** Menggunakan Drizzle karena kecepatannya yang ekstrem dan dukungannya yang native terhadap ekosistem TypeScript dan Bun.
+  - **Drizzle-Kit Auto Migrations:** Semua perubahan skema database dideklarasikan melalui kode TypeScript di layer Models, kemudian Drizzle-Kit akan mengonversinya menjadi file `.sql` migrasi secara otomatis. Perubahan database di server wajib dieksekusi melalui file migrasi ini saat proses CI/CD.
+  - **Database Pooling (PgBouncer/Supavisor):** Manajemen koneksi database yang efisien agar ribuan request bersamaan dari Bun tidak membuat server database mengalami kehabisan slot koneksi (connection exhaustion).
+
 
 ### Frontend Guidelines
 
