@@ -1,5 +1,5 @@
 import { api } from '@/shared/config/axios';
-import type { Stock, StockDetails, ScreenedStock, StocksApiResponse } from '../types/stocks.types';
+import type { Stock, StockDetails, ScreenedStock, StocksApiResponse } from '@/features/stocks/types/stocks.types';
 
 export const stocksApi = {
   list: async (): Promise<StocksApiResponse<Stock[]>> => {

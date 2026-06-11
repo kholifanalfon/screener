@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useScreenStocks, useStockDetails } from '../hooks/use-stocks';
+import { useScreenStocks, useStockDetails } from '@/features/stocks/hooks/use-stocks';
+import { useAIAnalyzeStock } from '@/features/ai/hooks/use-ai';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -12,11 +13,15 @@ import {
   Search,
   X,
   LineChart,
+  Sparkles,
+  Bot,
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 function StockDetailModal({ ticker, onClose }: { ticker: string; onClose: () => void }) {
   const { data: details, isLoading } = useStockDetails(ticker);
+  const aiAnalyzeMutation = useAIAnalyzeStock();
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -33,9 +38,17 @@ function StockDetailModal({ ticker, onClose }: { ticker: string; onClose: () => 
 
   const isProfit = details.change >= 0;
 
+  const handleRequestAIAnalysis = () => {
+    aiAnalyzeMutation.mutate(ticker, {
+      onSuccess: (data) => {
+        setAiAnalysis(data.analysis);
+      },
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl relative">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl relative my-8">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-full transition-colors"
@@ -56,19 +69,50 @@ function StockDetailModal({ ticker, onClose }: { ticker: string; onClose: () => 
               <p className="text-sm text-slate-400 mt-1">{details.sector}</p>
             </div>
 
-            <div className="text-left md:text-right">
-              <div className="text-3xl font-extrabold text-slate-100 tracking-tight">
-                {details.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace('IDR', 'Rp ')}
+            <div className="text-left md:text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-4 w-full md:w-auto">
+              <div>
+                <div className="text-3xl font-extrabold text-slate-100 tracking-tight">
+                  {details.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace('IDR', 'Rp ')}
+                </div>
+                <div className={`flex items-center gap-1 mt-1 text-sm font-semibold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {isProfit ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  <span>
+                    {isProfit ? '+' : ''}
+                    {details.change}%
+                  </span>
+                </div>
               </div>
-              <div className={`flex items-center gap-1 mt-1 text-sm font-semibold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                {isProfit ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                <span>
-                  {isProfit ? '+' : ''}
-                  {details.change}%
-                </span>
-              </div>
+
+              <Button
+                onClick={handleRequestAIAnalysis}
+                disabled={aiAnalyzeMutation.isPending}
+                className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold flex items-center gap-2 shadow-lg shadow-indigo-950/40 text-xs py-1.5 h-9"
+              >
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                {aiAnalyzeMutation.isPending ? 'Menganalisis...' : 'Analisis dengan Gemini AI'}
+              </Button>
             </div>
           </div>
+
+          {/* AI Analysis Result Section */}
+          {(aiAnalysis || aiAnalyzeMutation.isPending) && (
+            <div className="bg-indigo-950/10 border border-indigo-500/20 rounded-xl p-6 space-y-3">
+              <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+                <Bot className="w-5 h-5" />
+                Asisten Analis Keuangan AI (Gemini 1.5 Flash)
+              </div>
+              {aiAnalyzeMutation.isPending ? (
+                <div className="flex items-center gap-3 text-slate-400 text-xs py-2">
+                  <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Sedang memproses seluruh data teknikal dan fundamental untuk menyusun laporan...</span>
+                </div>
+              ) : (
+                <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line prose prose-invert max-w-none">
+                  {aiAnalysis}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Chart & Indicators */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

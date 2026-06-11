@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { stocksApi } from '../services/stocks.api';
-import { stocksKeys } from '../stocks.keys';
-import type { Stock, StockDetails, ScreenedStock } from '../types/stocks.types';
+import { stocksApi } from '@/features/stocks/services/stocks.api';
+import { stocksKeys } from '@/features/stocks/stocks.keys';
+import type { Stock, StockDetails, ScreenedStock } from '@/features/stocks/types/stocks.types';
 
 export function useListStocks() {
   return useQuery<Stock[]>({

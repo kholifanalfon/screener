@@ -57,3 +57,4 @@ app.use(errorHandler);
 app.listen(config.port, () => {
   logger.info(`Backend server is running on port ${config.port} in ${config.env} mode`);
 });
+
