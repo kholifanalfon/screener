@@ -1,164 +1,90 @@
-# Project Setup & Architecture Plan: Screener-Trade
+# High-Level Feature Plan: Aplikasi Screener Saham & AI Trading Assistant
 
-## Goal Description
+## 1. Ringkasan (Overview)
+Aplikasi berbasis **Progressive Web App (PWA)** yang dirancang untuk membantu trader mengambil keputusan yang lebih baik dan cepat melalui fitur screener saham, visualisasi data pasar, dan analisis cerdas menggunakan teknologi **Gemini AI**.
 
-Membangun aplikasi fullstack `screener-trade` dengan menggunakan arsitektur pemisahan antara Frontend dan Backend. Aplikasi ini menggunakan ekosistem TypeScript dari ujung ke ujung (end-to-end type safety) untuk memastikan performa tinggi, keamanan data yang baik, dan kemudahan skalabilitas dengan praktik _Advanced Software Engineering_.
+## 2. Fitur Utama (Core Features)
 
-### Core Tech Stack:
+### A. Integrasi Data Saham (API Finnhub / Yahoo Finance)
+- **Data Real-time & Historis**: Mengambil data pergerakan harga saham terkini, grafik candlestick interaktif (harian/mingguan/bulanan), dan volume perdagangan.
+- **Screener Saham Terpusat**: Kemampuan untuk memfilter ribuan saham berdasarkan berbagai indikator:
+  - *Teknikal*: RSI, MACD, Moving Average (MA), Bollinger Bands.
+  - *Fundamental*: P/E Ratio, Market Cap, Volume Rata-rata.
+- **Watchlist & Portfolio**: Fitur bagi pengguna untuk membuat dan menyimpan daftar pantauan saham personal.
 
-**Frontend:** React + TypeScript (Vite), Tailwind CSS & Shadcn UI, React Router, React Hook Form + Zod, Zustand, TanStack Query.
-**Backend:** Express + Bun, Drizzle ORM, Zod, Jose, Pino, Dotenv.
-**Database:** PostgreSQL (with Enterprise Connection Pooling).
-**Documentation:** Docusaurus (Architecture & SOP), Scalar (Interactive API Reference via `@scalar/express-api-reference`).
+### B. Analisis Cerdas Berbasis AI (Integrasi Gemini AI)
+- **AI Stock Summary**: Meringkas kondisi suatu saham (Bullish, Bearish, Sideways) secara instan menggunakan data real-time API yang diproses oleh Gemini AI.
+- **Analisis Sentimen & Risiko**: AI akan menganalisis tren, memberikan peringatan risiko, dan menyoroti level *support & resistance* berdasarkan pergerakan terkini.
+- **Asisten Chat Trading (AI Chatbot)**: Fitur chat interaktif di mana pengguna dapat bertanya langsung kepada AI mengenai prospek saham tertentu (Contoh: *"Bagaimana prospek teknikal saham AAPL hari ini berdasarkan indikator MACD?"*).
 
----
+### C. Autentikasi & Keamanan (Sistem Login, Session, & Middleware)
+- **Sistem Login Lengkap**: Registrasi, login, lupa kata sandi, serta perlindungan terhadap *brute-force*.
+- **Manajemen Session**: Menggunakan sistem *session* (misalnya via *HTTP-only cookies*) agar pengguna tetap masuk dengan aman, serta mendukung pengelolaan sesi (logout dari semua perangkat).
+- **Proteksi Middleware**: Middleware di level server/router untuk memastikan rute penting (Dashboard, Screener, AI Chat, Watchlist) **hanya bisa diakses oleh pengguna yang sudah login**. Mencegah akses tidak sah secara langsung.
 
-## Advanced Software Engineering Guidelines
-
-Kami menerapkan standar industri tinggi untuk memastikan _maintainability_ dan _scalability_ dengan guidelines khusus untuk Frontend dan Backend:
-
-### General Guidelines
-
-- **Environment Configuration:** Menggunakan 1 file `.env` terpusat di root monorepo untuk seluruh aplikasi. Variabel environment wajib dikelompokkan dengan prefix spesifik: `BE_` untuk Backend, `FE_` untuk Frontend, dan `DOCS_` untuk Dokumentasi (contoh: `BE_PORT=3000`, `FE_API_URL=http://localhost:3000`).
-- **Git Workflow & Branching Strategy:** Scaled Trunk-Based (2-Branch System):
-  - **development Branch:** Bertindak sebagai trunk aktif. Developer membuat Short-Lived Feature Branches dari cabang ini dan wajib melakukan merge kembali maksimal dalam 1-2 hari via Pull Request setelah lolos uji lokal.
-  - **main Branch:** Cabang khusus production. Kode dari development didorong ke main melalui rilis berkala yang terjadwal setelah dinyatakan lolos uji di lingkungan Staging/UAT.
-- **CI/CD & Automated Deployment:**
-  - **GitHub Actions Pipeline:** Mengotomatiskan proses pengujian kode (bun test) dan validasi formatting (Biome/ESLint) setiap kali ada aktivitas Pull Request ke cabang development atau main.
-  - **Docker & GHCR (GitHub Packages):** Hasil build aplikasi yang sukses akan dibungkus menjadi production-ready Docker image (berbasis oven/bun:alpine) dan didorong langsung ke GitHub Container Registry (GHCR) sebagai repositori image privat perusahaan. Server target tinggal menarik image terverifikasi tersebut untuk proses pembaruan instan.
-- **Database Management & Migrations:**
-  - **Drizzle ORM:** Menggunakan Drizzle karena kecepatannya yang ekstrem dan dukungannya yang native terhadap ekosistem TypeScript dan Bun.
-  - **Drizzle-Kit Auto Migrations:** Semua perubahan skema database dideklarasikan melalui kode TypeScript di layer Models, kemudian Drizzle-Kit akan mengonversinya menjadi file `.sql` migrasi secara otomatis. Perubahan database di server wajib dieksekusi melalui file migrasi ini saat proses CI/CD.
-  - **Database Pooling (PgBouncer/Supavisor):** Manajemen koneksi database yang efisien agar ribuan request bersamaan dari Bun tidak membuat server database mengalami kehabisan slot koneksi (connection exhaustion).
-
-
-### Frontend Guidelines
-
-**Architecture**
-
-- **Pendekatan:** Feature-Driven / Co-Located Architecture. Semua kode yang terikat pada satu domain bisnis dikelompokkan dalam satu folder fitur. Jika fitur memiliki lebih dari satu halaman (misal: halaman daftar dan halaman rincian), file-file halaman tersebut diisolasi ke dalam sub-folder `pages/` di dalam folder fitur tersebut.
-- **Struktur Folder:** Folder `shared/` hanya menyimpan infrastruktur global/primitif (seperti Shadcn UI). Sisa kode dibungkus per fitur dengan format penamaan file kebab-case + suffix layer:
-  ```text
-  src/features/order-management/
-  ├── pages/                      # Wajib dibuat jika fitur memiliki > 1 halaman
-  │   ├── order-management-list.page.tsx    # Halaman Utama (Index/Table)
-  │   └── order-management-detail.page.tsx  # Halaman Rincian tunggal (Gunakan kata benda tunggal 'detail')
-  ├── components/                 # Komponen UI (Presenter) yang dipakai oleh halaman-halaman di atas
-  │   ├── order-table.tsx
-  │   └── order-invoice-card.tsx
-  ├── hooks/                      # Custom hooks TanStack Query
-  │   ├── use-create-order.ts
-  │   └── use-get-orders.ts
-  ├── services/                   # Fungsi komunikasi API / Axios client
-  │   └── order-management.api.ts
-  ├── types/                      # Type & Interface TypeScript spesifik domain
-  │   └── order-management.types.ts
-  └── order-management.schema.ts  # Skema validasi formulir (Zod)
-  ```
-
-**Code Style & Casing Rules**
-
-- **Aturan Suffix & Ekstensi:** Wajib memisahkan komponen visual dengan logika. Komponen UI menggunakan `.tsx` dengan PascalCase (`OrderTable.tsx`), sedangkan logika/hooks menggunakan `.ts` dengan camelCase dan awalan `use` (`useGetOrders.ts`). Semua file halaman wajib menggunakan suffix `-[konteks].page.tsx`.
-- **camelCase:** Digunakan untuk penamaan fungsi API, custom hooks, properti objek, variabel lokal, dan deklarasi state di dalam Zustand store. Contoh: `const { data: orderList } = useGetOrders();`.
-- **snake_case:** Hanya digunakan jika payload JSON dari API backend menggunakan format `snake_case`. Data ini langsung ditransformasikan atau divalidasi menggunakan Zod `.camelCase()` sebelum dikonsumsi oleh komponen React.
-- **PascalCase:** Wajib untuk komponen React, Tipe/Interface TypeScript, dan instansiasi skema validasi Zod. Contoh: `export function OrderForm() {}`, `interface OrderPayload`, `const CreateOrderSchema`.
-- **kebab-case:** Wajib untuk seluruh nama folder, nama file fisik sistem, dan segmen rute URL pada React Router untuk menghindari isu case-sensitivity di lingkungan server produksi (Linux/Docker). Contoh: `/order-management` atau `/order-management/:id`.
-
-**Design Pattern**
-
-- **Container-Presenter Pattern (Penempatan Response & Logika):** File di dalam folder `pages/` (`.page.tsx`) bertindak sebagai Container tunggal yang mengelola side-effects, membaca Zustand store, menangani parameter URL (seperti ID detail), dan memanggil TanStack Query. Komponen di dalam folder `components/` harus berupa Presenter (dumb components) murni yang hanya menerima data dan event handler melalui props.
-- **Custom Hooks Facade Pattern (Penempatan Query):** Komponen UI dilarang keras memanggil `useQuery` atau `useMutation` secara langsung dari TanStack Query. Semua pemanggilan API wajib dibungkus ke dalam custom hooks lokal fitur (`hooks/`) sebagai fasad untuk menyembunyikan detail konfigurasi query key dan fetcher.
-- **Schema-Driven Forms:** Proses pembuatan formulir wajib mengintegrasikan React Hook Form dengan skema Zod melalui `@hookform/resolvers/zod`. Aturan validasi dipusatkan di file `.schema.ts` dan dieksekusi di sisi klien sebelum mutasi TanStack Query dijalankan.
-- **Alur Eksekusi Data:** Alur data selalu mengikuti jalur satu arah: User Action -> Form Validation (Zod) -> Page Container -> Custom Hook Facade (TanStack Query) -> Service API -> Server -> Update Cache/Zustand Store -> Re-render Presenter via Props.
-
-**Testing Strategy & Quality Assurance**
-
-- **Fokus Pengujian:** Menitikberatkan pada Component & Integration Testing menggunakan gabungan Vitest (sebagai test runner bawaan Vite) dan React Testing Library (RTL) untuk menguji perilaku interaksi pengguna pada level fitur.
-- **Network Mocking (MSW):** Wajib menggunakan Mock Service Worker (MSW) untuk melakukan mocking pada level jaringan (network layer). Ini memastikan TanStack Query dan alur data komponen dapat diuji secara utuh dalam kondisi mirip nyata tanpa perlu melakukan hit shortcut ke server API backend asli.
-- **Linting & Disiplin QA:** Menerapkan aturan ESLint TypeScript strict mode, penataan kode otomatis via Prettier, serta pemeriksaan otomatis menggunakan lint-staged dan Husky sebelum kode diizinkan masuk ke proses commit Git.
-
-### Backend Guidelines
-
-**Architecture**
-
-- **Pendekatan:** Modular/Feature-Driven Architecture dengan isolasi domain yang ketat. Kode dikelompokkan berdasarkan fitur bisnis (misal: auth, user, order-management), bukan berdasarkan jenis file teknis.
-- **Struktur Folder:** Setiap modul bersifat mandiri dan memiliki ekosistem layernya sendiri dengan format penamaan file kebab-case + suffix layer:
-  ```text
-  src/modules/order-management/
-  ├── order-management.controller.ts  # Layer HTTP (Express Router & Handler)
-  ├── order-management.service.ts     # Layer Bisnis & Aturan Validasi
-  ├── order-management.repository.ts  # Layer Data Access (Drizzle)
-  └── order-management.schema.ts      # Layer Validasi Input (Zod)
-  ```
-
-**Code Style & Casing Rules**
-
-- **Aturan Suffix (Akhiran):** Wajib menggunakan suffix lowercase pada nama file, dan PascalCase pada nama Class/Fungsi untuk menjaga context awareness saat pencarian file atau pembacaan log (`OrderService`, `OrderRepository`).
-- **camelCase:** Digunakan untuk entitas internal kode (nama variabel, properti objek, fungsi/metode, dan instance kelas). Contoh: `const currentOrder = await orderRepository.getById(orderId);`.
-- **snake_case:** Digunakan khusus untuk skema kolom database pada Drizzle ORM agar sesuai dengan standar SQL, serta untuk format I/O payload API jika perusahaan mengadopsi standar JSON snake_case. Contoh: `created_at: timestamp('created_at')`.
-- **PascalCase:** Wajib untuk komponen dengan struktur tinggi: Nama Kelas, Interface, Tipe TypeScript, dan Skema Zod. Contoh: `class OrderController`, `type UserPayload`, `const CreateOrderSchema`.
-- **kebab-case:** Wajib untuk seluruh nama file, folder sistem, dan segmen rute URL endpoint Express untuk menghindari isu case-sensitivity di lingkungan server produksi (Linux/Docker). Contoh: `/api/v1/order-management`.
-
-**Design Pattern**
-
-- **Repository Pattern (Penempatan Query):** Semua interaksi database dan sintaksis query dari Drizzle ORM wajib ditempatkan secara terisolasi di dalam kelas Layer Repository (`[Nama]Repository`). Layer Service tidak boleh mengetahui cara kerja internal query SQL atau detail koneksi database.
-- **Middleware Chain & Schema-Driven (Penempatan Response):** Validasi input skema Zod dipasang sebagai middleware Express di layer Controller sebelum masuk ke Service. Tanggung jawab pengiriman response HTTP JSON (`res.status().json()`) sepenuhnya dipegang oleh Layer Controller.
-- **Alur Eksekusi Request:** Alur data selalu mengikuti jalur satu arah: Route -> Auth Middleware (Jose) -> Validation Middleware (Zod) -> Controller (Kirim HTTP Response) -> Service (Business Logic / Transaction) -> Repository (Query Drizzle) -> Database.
-
-**Testing Strategy & Quality Assurance**
-
-- **Fokus Pengujian:** Menitikberatkan pada Integration Testing dan End-to-End (E2E) Testing per modul menggunakan built-in test runner dari Bun (`bun test`).
-- **Implementasi QA:** Menggunakan database instan (seperti SQLite in-memory atau Docker Postgres terisolasi) untuk menguji alur lengkap dari Controller hingga Repository tanpa mocking berlebihan.
-- **Logging Context:** Pino Logger dikonfigurasi secara global untuk menangkap stack trace yang otomatis mencantumkan nama layer (misal: `Error caught in OrderManagementService`) guna mempercepat proses debugging di lingkungan staging dan produksi.
+### D. Progressive Web App (PWA)
+- **Aplikasi "Installable"**: Pengguna dapat menambahkan aplikasi ini ke *homescreen* (Layar Utama) HP Android, iOS, maupun Desktop (Windows/Mac) dan menggunakannya layaknya aplikasi *native* tanpa harus mengunduh dari App Store.
+- **Dukungan Offline & Caching**: Implementasi *Service Worker* untuk menyimpan *cache* aset UI, font, dan riwayat data saham terakhir. Hal ini memastikan performa aplikasi yang cepat dan tetap dapat dibuka meskipun sinyal internet sedang buruk.
 
 ---
 
-## Proposed Project Structure (Monorepo)
+## 3. Struktur Menu Aplikasi
 
-### `ROOT /`
-
-- `.github/workflows/` (CI/CD Pipelines)
-- `package.json`, `bunfig.toml`, `PLAN.md`
-- `docker-compose.yml` (Konfigurasi untuk menjalankan semua service via Docker)
-- `docker/` (Konfigurasi Docker terpusat)
-  - `backend/` (Dockerfile, entrypoint.sh untuk backend)
-  - `frontend/` (Dockerfile, nginx.conf untuk frontend)
-  - `docs/` (Dockerfile untuk dokumentasi Docusaurus)
-
-### `apps/docs/`
-
-- Dokumentasi Docusaurus untuk arsitektur dan SOP.
-
-### `apps/backend/`
-
-Penerapan arsitektur baru (Modular/Feature-Driven):
-
-- `src/core/` (Logger, Error Handler, Config, Middleware Global)
-- `src/db/` (Drizzle ORM Connection Setup & Migrations)
-- `src/modules/`
-  - `[feature-name]/` (Contoh: `auth/`, `order-management/`)
-    - `[feature-name].controller.ts` # Layer HTTP (Express Router & Handler)
-    - `[feature-name].service.ts` # Layer Bisnis & Aturan Validasi
-    - `[feature-name].repository.ts` # Layer Data Access (Drizzle)
-    - `[feature-name].schema.ts` # Layer Validasi Input (Zod)
-    - `[feature-name].routes.ts` # Registrasi Rute Spesifik Modul
-- `src/docs/` (Swagger/Scalar API setup via zod-openapi)
-- `tests/` (Bun Test scripts)
-
-### `apps/frontend/`
-
-Penerapan arsitektur baru (Feature-Driven / Co-Located Architecture):
-
-- `src/features/`
-  - `[feature-name]/` (Contoh: `order-management/`)
-    - `pages/` # Halaman Utama/Detail (e.g., `[feature]-list.page.tsx`)
-    - `components/` # Komponen UI Presenter Spesifik Fitur
-    - `hooks/` # Fasad TanStack Query (e.g., `use-get-[feature].ts`)
-    - `services/` # Klien Axios/API (e.g., `[feature].api.ts`)
-    - `types/` # Type & Interface Spesifik Fitur
-    - `[feature-name].schema.ts` # Skema Validasi Zod
-- `src/shared/` # Infrastruktur Global (Shadcn UI, Utils, Libs)
-- `tests/e2e/` # Pengujian End-to-End dengan Playwright
-- `tests/components/` # Pengujian Komponen dengan Vitest & RTL
+Untuk mendukung alur pengguna yang intuitif, aplikasi akan memiliki navigasi menu utama berikut:
+- **Dashboard**: Ringkasan pasar, *top gainers/losers*, dan *AI insights* harian.
+- **Saham (Screener & Chart)**: Halaman utama untuk memfilter saham, melihat grafik, dan data finansial.
+- **Portofolio**: Halaman khusus untuk mencatat dan melacak performa investasi pengguna (posisi beli/jual dan profit/loss).
+- **Recap (Trading Journal)**: Halaman riwayat transaksi (*trading*) untuk evaluasi masa lalu dan mencatat jurnal/catatan analisis.
+- **Master User (Admin)**: Halaman manajemen khusus admin untuk mengelola akses pengguna, *role*, dan memantau aktivitas sistem.
+- **Master Saham (Admin)**: Halaman *registry* saham (*master data*) untuk mengelola daftar kode ticker, nama perusahaan, dan sektor yang didukung dalam sistem.
+- **Pengaturan (Settings)**: Halaman konfigurasi preferensi pengguna dan sistem, meliputi pengaturan kunci API (*API Keys*), default batas TP/SL (*Take Profit / Stop Loss*), pemilihan model AI, dan pengaturan Target Index sebagai *benchmark*.
 
 ---
+
+## 4. Rekomendasi Teknologi (Tech Stack)
+
+Berdasarkan panduan *Advanced Software Engineering* (`GUIDELINES.md`), aplikasi ini akan menggunakan arsitektur **Monorepo** dengan pemisahan tegas antara Frontend dan Backend (*End-to-End Type Safety*).
+
+- **Frontend**: **React + TypeScript (Vite)**
+  - *State Management*: Zustand & TanStack Query (Custom Hooks Facade Pattern).
+  - *Styling*: Tailwind CSS & Shadcn UI.
+  - *Form & Validation*: React Hook Form + Zod.
+  - *Routing*: React Router (Pendekatan Feature-Driven / Co-Located Architecture).
+- **Backend**: **Express + Bun**
+  - *Validation & Middleware*: Zod & Jose (untuk Auth).
+  - *Logging*: Pino.
+  - *Arsitektur*: Modular/Feature-Driven Architecture (Controller, Service, Repository).
+- **Database & ORM**: **PostgreSQL** dengan **Drizzle ORM** (didukung oleh Enterprise Connection Pooling seperti PgBouncer/Supavisor).
+- **Dokumentasi API**: Docusaurus & Scalar (`@scalar/express-api-reference`).
+- **Integrasi Pihak Ketiga**:
+  - *Data Market*: Finnhub API atau Yahoo Finance API.
+  - *AI Engine*: Google Gemini API (`@google/generative-ai`).
+
+---
+
+## 5. Tahapan Pengembangan (Implementation Phases)
+
+1. **Fase 1: Konfigurasi PWA & Skema Database Dasar**
+   - Mengonfigurasi plugin PWA pada Frontend Vite (`vite-plugin-pwa`).
+   - Memastikan koneksi ke Database PostgreSQL & inisialisasi skema dengan Drizzle ORM.
+   - Memastikan *Environment Variables* terpusat sudah siap untuk fitur Screener.
+
+2. **Fase 2: Autentikasi & Core Backend Modul**
+   - Implementasi Modul Auth (Login, Register) di Backend menggunakan Jose & Zod.
+   - Setup Middleware keamanan di Backend.
+   - Implementasi state autentikasi (Zustand) dan proteksi rute (React Router) di Frontend.
+
+3. **Fase 3: Integrasi Data & Screener Saham**
+   - Pembuatan Modul Saham di Backend (menyambungkan API Finnhub/Yahoo Finance).
+   - Membangun UI Dashboard, Grafik Saham, dan tabel Screener dengan Shadcn UI.
+   - Fasad API di Frontend dengan TanStack Query untuk performa *caching* dan re-fetching data yang efisien.
+
+4. **Fase 4: Keajaiban AI (Integrasi Gemini)**
+   - Menyambungkan Google Gemini API di Layer Service Backend.
+   - Menulis *System Prompt* khusus untuk menganalisis data saham teknikal & fundamental.
+   - Membangun antarmuka Chatbot/Hasil Analisis AI di Frontend.
+
+5. **Fase 5: UI/UX Polish, Testing & Deployment**
+   - Pengujian Backend dengan `bun test` dan Frontend dengan Vitest, RTL, & MSW.
+   - Optimalisasi PWA (Offline Support & Caching).
+   - *Containerization* menggunakan Docker dan *deploy* ke production via GHCR (GitHub Container Registry).
