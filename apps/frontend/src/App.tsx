@@ -10,6 +10,7 @@ import RegisterPage from "@/features/auth/pages/auth-register.page";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { PublicRoute } from "@/shared/components/public-route";
 import { useMe, useLogout } from "@/features/auth/hooks/use-auth";
+import StockScreenerPage from "@/features/stocks/pages/stock-screener.page";
 
 interface BackendInfo {
   name: string;
@@ -24,6 +25,7 @@ interface BackendInfo {
 }
 
 function Dashboard() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'screener'>('dashboard');
   const [count, setCount] = useState(0);
   const [backendInfo, setBackendInfo] = useState<BackendInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,115 +127,147 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-5xl w-full space-y-16 text-center z-10">
-        {/* Logo Section */}
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-8">
-            <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/30 transition-colors shadow-sm">
-              <img
-                src={viteLogo}
-                className="h-16 w-16 mx-auto transition-transform hover:scale-110"
-                alt="Vite logo"
-              />
+      {/* Navigation Tabs */}
+      <div className="max-w-5xl w-full flex gap-4 border-b border-slate-800 pb-px mb-8 z-10">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'dashboard'
+              ? 'border-indigo-500 text-indigo-405 font-bold'
+              : 'border-transparent text-slate-450 hover:text-slate-205'
+          }`}
+        >
+          Dashboard
+        </button>
+        <button
+          onClick={() => setActiveTab('screener')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'screener'
+              ? 'border-indigo-500 text-indigo-405 font-bold'
+              : 'border-transparent text-slate-450 hover:text-slate-205'
+          }`}
+        >
+          Stock Screener
+        </button>
+      </div>
+
+      <div className="max-w-5xl w-full space-y-12 z-10">
+        {activeTab === 'dashboard' ? (
+          <div className="space-y-16 text-center">
+            {/* Logo Section */}
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-8">
+                <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/30 transition-colors shadow-sm">
+                  <img
+                    src={viteLogo}
+                    className="h-16 w-16 mx-auto transition-transform hover:scale-110"
+                    alt="Vite logo"
+                  />
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/30 transition-colors shadow-sm">
+                  <img
+                    src={reactLogo}
+                    className="h-16 w-16 mx-auto transition-transform hover:scale-110 animate-[spin_10s_linear_infinite]"
+                    alt="React logo"
+                  />
+                </div>
+              </div>
+              <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-slate-100">
+                Screener-Trade
+              </h1>
+              <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+                Advanced Software Engineering Architecture
+              </p>
             </div>
-            <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/30 transition-colors shadow-sm">
-              <img
-                src={reactLogo}
-                className="h-16 w-16 mx-auto transition-transform hover:scale-110 animate-[spin_10s_linear_infinite]"
-                alt="React logo"
-              />
+
+            {/* Backend Info Section */}
+            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-xl p-8 shadow-sm max-w-3xl mx-auto space-y-4">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
+                <h2 className="font-bold text-xl text-slate-200">Backend API Status</h2>
+              </div>
+              
+              {loading ? (
+                <p className="text-slate-455 animate-pulse text-sm">Connecting to backend server...</p>
+              ) : backendInfo ? (
+                <div className="text-left space-y-4 bg-slate-950/80 p-6 rounded-lg border border-slate-800">
+                  <div>
+                    <p className="font-semibold text-indigo-400">{backendInfo.name}</p>
+                    <p className="text-sm text-slate-455">{backendInfo.message}</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-850">
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Environment</p>
+                      <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">{backendInfo.environment}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Bun</p>
+                      <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.bun}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Node</p>
+                      <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.node}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Express</p>
+                      <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.express}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-red-950/30 text-red-400 rounded-lg border border-red-900/30 text-sm">
+                  Failed to connect to backend server. Make sure it's running on port 3000.
+                </div>
+              )}
+            </div>
+
+            {/* Tech Stack Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+              {techStacks.map((stack, index) => (
+                <div
+                  key={index}
+                  className="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-sm hover:border-slate-700/50 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                      {stack.icon}
+                    </div>
+                    <h2 className="font-bold text-lg text-slate-200">{stack.title}</h2>
+                  </div>
+                  <ul className="space-y-2">
+                    {stack.items.map((item, i) => (
+                      <li key={i} className="text-sm text-slate-400 flex items-start gap-2">
+                        <span className="text-indigo-500 mt-1">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* Interactive Section */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8 shadow-sm max-w-md mx-auto space-y-6">
+              <button
+                onClick={() => setCount((count) => count + 1)}
+                className="w-full bg-indigo-650 hover:bg-indigo-600 active:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg shadow-indigo-950/40 text-sm"
+              >
+                Count is {count}
+              </button>
+              <p className="text-sm text-slate-450">
+                Edit{" "}
+                <code className="bg-slate-950 px-1.5 py-0.5 rounded text-indigo-400 border border-slate-850 font-mono">
+                  src/App.tsx
+                </code>{" "}
+                and save to test HMR
+              </p>
             </div>
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-slate-100">
-            Screener-Trade
-          </h1>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            Advanced Software Engineering Architecture
-          </p>
-        </div>
-
-        {/* Backend Info Section */}
-        <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-xl p-8 shadow-sm max-w-3xl mx-auto space-y-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
-            <h2 className="font-bold text-xl text-slate-200">Backend API Status</h2>
+        ) : (
+          <div className="text-left">
+            <StockScreenerPage />
           </div>
-          
-          {loading ? (
-            <p className="text-slate-450 animate-pulse text-sm">Connecting to backend server...</p>
-          ) : backendInfo ? (
-            <div className="text-left space-y-4 bg-slate-950/80 p-6 rounded-lg border border-slate-800">
-              <div>
-                <p className="font-semibold text-indigo-400">{backendInfo.name}</p>
-                <p className="text-sm text-slate-450">{backendInfo.message}</p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-850">
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Environment</p>
-                  <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">{backendInfo.environment}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Bun</p>
-                  <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.bun}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Node</p>
-                  <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.node}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Express</p>
-                  <p className="font-mono text-sm px-2 py-1 bg-slate-900 rounded-md inline-block border border-slate-800 text-slate-300">v{backendInfo.versions.express}</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-red-950/30 text-red-400 rounded-lg border border-red-900/30 text-sm">
-              Failed to connect to backend server. Make sure it's running on port 3000.
-            </div>
-          )}
-        </div>
-
-        {/* Tech Stack Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-          {techStacks.map((stack, index) => (
-            <div
-              key={index}
-              className="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-sm hover:border-slate-700/50 hover:shadow-md transition-all"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-slate-950 rounded-lg border border-slate-800">
-                  {stack.icon}
-                </div>
-                <h2 className="font-bold text-lg text-slate-200">{stack.title}</h2>
-              </div>
-              <ul className="space-y-2">
-                {stack.items.map((item, i) => (
-                  <li key={i} className="text-sm text-slate-400 flex items-start gap-2">
-                    <span className="text-indigo-500 mt-1">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Interactive Section */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8 shadow-sm max-w-md mx-auto space-y-6">
-          <button
-            onClick={() => setCount((count) => count + 1)}
-            className="w-full bg-indigo-650 hover:bg-indigo-600 active:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg shadow-indigo-950/40 text-sm"
-          >
-            Count is {count}
-          </button>
-          <p className="text-sm text-slate-450">
-            Edit{" "}
-            <code className="bg-slate-950 px-1.5 py-0.5 rounded text-indigo-400 border border-slate-850 font-mono">
-              src/App.tsx
-            </code>{" "}
-            and save to test HMR
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );

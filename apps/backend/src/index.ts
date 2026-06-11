@@ -4,6 +4,7 @@ import { config } from './core/config';
 import { logger } from './core/logger';
 import { errorHandler } from './core/middleware';
 import authRoutes from './modules/auth/auth.routes';
+import stockRoutes from './modules/stocks/stocks.routes';
 import { requireAuth } from './core/auth-middleware';
 import { validateSignature } from './core/middlewares/signature.middleware';
 
@@ -22,6 +23,7 @@ app.use(validateSignature);
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/stocks', stockRoutes);
 
 // Request logging middleware
 app.use((req, res, next) => {

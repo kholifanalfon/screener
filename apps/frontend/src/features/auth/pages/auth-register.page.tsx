@@ -85,9 +85,7 @@ export default function AuthRegisterPage() {
                 <Input
                   type="text"
                   placeholder="Nama Anda"
-                  className={`pl-10 ${
-                    errors.fullName ? 'border-red-500 focus-visible:ring-red-500' : 'border-slate-800 focus-visible:ring-indigo-500'
-                  }`}
+                  className={`pl-10 ${errors.fullName ? 'input-error' : 'input-primary'}`}
                   {...register('fullName')}
                 />
               </div>
@@ -102,9 +100,7 @@ export default function AuthRegisterPage() {
                 <Input
                   type="email"
                   placeholder="nama@email.com"
-                  className={`pl-10 ${
-                    errors.email ? 'border-red-500 focus-visible:ring-red-500' : 'border-slate-800 focus-visible:ring-indigo-500'
-                  }`}
+                  className={`pl-10 ${errors.email ? 'input-error' : 'input-primary'}`}
                   {...register('email')}
                 />
               </div>
@@ -119,9 +115,7 @@ export default function AuthRegisterPage() {
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className={`pl-10 pr-10 ${
-                    errors.password ? 'border-red-500 focus-visible:ring-red-500' : 'border-slate-800 focus-visible:ring-indigo-500'
-                  }`}
+                  className={`pl-10 pr-10 ${errors.password ? 'input-error' : 'input-primary'}`}
                   {...register('password')}
                 />
                 <button

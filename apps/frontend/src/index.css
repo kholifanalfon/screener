@@ -30,3 +30,15 @@ body {
   @apply bg-background text-foreground;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+@layer utilities {
+  .input-primary {
+    @apply border-slate-800 focus-visible:ring-indigo-500;
+  }
+  .input-error {
+    @apply border-red-500 focus-visible:ring-red-500;
+  }
+  .input-success {
+    @apply border-emerald-500 focus-visible:ring-emerald-500;
+  }
+}

@@ -153,7 +153,7 @@ Penerapan arsitektur baru (Feature-Driven / Co-Located Architecture):
   - `[feature-name]/` (Contoh: `order-management/`)
     - `pages/` # Halaman Utama/Detail (e.g., `[feature]-list.page.tsx`)
     - `components/` # Komponen UI Presenter Spesifik Fitur
-    - `hooks/` # Fasad TanStack Query (e.g., `use-get-[feature].ts`)
+    - `hooks/` # Fasad TanStack Query (e.g., `use-[feature].ts`)
     - `services/` # Klien Axios/API (e.g., `[feature].api.ts`)
     - `types/` # Type & Interface Spesifik Fitur
     - `[feature-name].schema.ts` # Skema Validasi Zod
