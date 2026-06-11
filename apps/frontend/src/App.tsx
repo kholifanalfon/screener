@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import reactLogo from "@/assets/react.svg";
 import viteLogo from "@/assets/vite.svg";
 import { Layers, Server, Database, BookOpen, Activity, LogOut, User as UserIcon } from "lucide-react";
-import axios from "axios";
+import { api } from "@/shared/config/axios";
 import "./App.css";
 import LoginPage from "@/features/auth/pages/auth-login.page";
 import RegisterPage from "@/features/auth/pages/auth-register.page";
@@ -36,7 +36,7 @@ function Dashboard() {
     const fetchBackendInfo = async () => {
       try {
         const apiUrl = import.meta.env.FE_API_URL || "http://localhost:3000";
-        const response = await axios.get(apiUrl);
+        const response = await api.get(apiUrl, { baseURL: "" });
         setBackendInfo(response.data);
       } catch (error) {
         console.error("Failed to fetch backend info:", error);
