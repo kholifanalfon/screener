@@ -54,7 +54,11 @@ app.get('/', requireAuth, (req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  logger.info(`Backend server is running on port ${config.port} in ${config.env} mode`);
-});
+if (import.meta.main) {
+  app.listen(config.port, () => {
+    logger.info(`Backend server is running on port ${config.port} in ${config.env} mode`);
+  });
+}
+
+export { app };
 
