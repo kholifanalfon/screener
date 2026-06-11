@@ -3,11 +3,25 @@ import cors from 'cors';
 import { config } from './core/config';
 import { logger } from './core/logger';
 import { errorHandler } from './core/middleware';
+import authRoutes from './modules/auth/auth.routes';
+import { requireAuth } from './core/auth-middleware';
+import { validateSignature } from './core/middlewares/signature.middleware';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+// Signature verification middleware
+app.use(validateSignature);
+
+// Routes
+app.use('/api/v1/auth', authRoutes);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -19,7 +33,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
 });
 
-app.get('/', (req, res) => {
+app.get('/', requireAuth, (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const pkg = require('../package.json');
   res.json({

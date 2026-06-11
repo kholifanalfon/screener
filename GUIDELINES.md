@@ -157,6 +157,7 @@ Penerapan arsitektur baru (Feature-Driven / Co-Located Architecture):
     - `services/` # Klien Axios/API (e.g., `[feature].api.ts`)
     - `types/` # Type & Interface Spesifik Fitur
     - `[feature-name].schema.ts` # Skema Validasi Zod
+    - `[feature-name].keys.ts` # Keys dari TanStack Query
 - `src/shared/` # Infrastruktur Global (Shadcn UI, Utils, Libs)
 - `tests/e2e/` # Pengujian End-to-End dengan Playwright
 - `tests/components/` # Pengujian Komponen dengan Vitest & RTL

@@ -1,11 +1,9 @@
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
+export const stocks = pgTable('stocks', {
   id: serial('id').primaryKey(),
-  
-  // TODO: Tambahkan kolom-kolom tabel Anda di sini
+  ticker: text('ticker').unique().notNull(),
   name: text('name').notNull(),
-  
+  sector: text('sector'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

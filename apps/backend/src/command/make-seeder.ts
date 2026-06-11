@@ -17,7 +17,7 @@ const camelCaseName = kebabCaseName.replace(/-([a-z])/g, (g) => g[1].toUpperCase
 const seedersDir = path.join(__dirname, '../db/seeders');
 // Agar urutan eksekusi seeder dapat diatur (jika ada relasi tabel), 
 // kita bisa gunakan prefix angka opsional, tapi defaultnya kebab-case
-const seederFilePath = path.join(seedersDir, `${kebabCaseName}-seeder.ts`);
+const seederFilePath = path.join(seedersDir, `${kebabCaseName}.seeder.ts`);
 
 if (!fs.existsSync(seedersDir)) {
   fs.mkdirSync(seedersDir, { recursive: true });
